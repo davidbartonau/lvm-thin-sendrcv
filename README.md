@@ -1,5 +1,5 @@
 # lvm-thin-sendrcv
-Send and receive incremental / thin LVM snapshots 
+Send and receive incremental / thin LVM snapshots.  Synchronise an LVM volume to a remote server by transmitting only the difference between snapshots.
 
 # Purpose 
 LVM volumes (LVs) are useful, however synchronising them between machines is generally slow, especially when repeated.  The goals of this project are:
