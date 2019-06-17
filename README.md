@@ -48,6 +48,7 @@ SNAP2_ID=$(lvs --noheadings -o thin_id volg/thin_volume_snap5)
 
 # Reserve the metadata
 dmsetup message /dev/mapper/volg-volg--thinpool-tpool 0 reserve_metadata_snap
+dmsetup status /dev/mapper/volg-volg--thinpool-tpool  # Get the snapshot ID piping through: cut -f 7 -d " "
 
 # Determine the difference between the snapshots
 thin_delta  -m --snap1 $SNAP1_ID --snap2 $SNAP2_ID /dev/mapper/volg-volg--thinpool_tmeta
