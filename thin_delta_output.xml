@@ -2,7 +2,7 @@
   dmsetup message /dev/mapper/volg-volg--thinpool-tpool 0 reserve_metadata_snap
   thin_delta  -m --snap1 $(lvs --noheadings -o thin_id volg/thin_volume_snap4) --snap2 $(lvs --noheadings -o thin_id volg/thin_volume_snap5) /dev/mapper/volg-volg--thinpool_tmeta  
   dmsetup message /dev/mapper/volg-volg--thinpool-tpool 0 release_metadata_snap
-->
+-->
 <superblock uuid="" time="5" transaction="8" data_block_size="128" nr_data_blocks="0">
   <diff left="5" right="6">
     <different begin="0" length="1"/>

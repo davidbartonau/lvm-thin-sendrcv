@@ -37,8 +37,9 @@ public class DDRandomSend
 
             System.out.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n\n<dd>");
 
-            for (int block : blocks)
+            for (long block : blocks)
             {
+                System.err.println("Process block:" + block + " -> " + (block * blockSizeBytes)); // @todo
                 infileRO.seek(block * blockSizeBytes);
                 infileRO.readFully(blockbuffer);    // @todo what if there are not enough bytes left?
                 
