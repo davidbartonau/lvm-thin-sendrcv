@@ -1,11 +1,7 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package oneit.lvmsendrcv;
 
 import java.util.*;
+import java.io.*;
 import javax.xml.xpath.*;
 import org.w3c.dom.*;
 
@@ -14,7 +10,7 @@ import org.w3c.dom.*;
  *
  * @author david
  */
-public class Utils 
+public class XMLUtils 
 {
     public static final XPathFactory    XPATH_FACTORY = XPathFactory.newInstance();
     
@@ -43,5 +39,4 @@ public class Utils
 
         return result;
     }
-    
 }

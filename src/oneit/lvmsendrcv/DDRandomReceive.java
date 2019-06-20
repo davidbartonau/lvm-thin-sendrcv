@@ -34,10 +34,10 @@ public class DDRandomReceive
 
         try (RandomAccessFile       outfileRW = new RandomAccessFile(outputFile, "rw"))
         {
-            for (Node blockNode : Utils.getXPathNodes(doc, "dd/block"))
+            for (Node blockNode : XMLUtils.getXPathNodes(doc, "dd/block"))
             {
-                int     blockOffset = blockSizeBytes * Integer.parseInt(Utils.getXPathVal(blockNode, "@offset"));
-                String  blockContent = Utils.getXPathVal(blockNode, "text()");
+                int     blockOffset = blockSizeBytes * Integer.parseInt(XMLUtils.getXPathVal(blockNode, "@offset"));
+                String  blockContent = XMLUtils.getXPathVal(blockNode, "text()");
                 byte[]  blockBytes = Base64.getDecoder().decode(blockContent);
 
                 // @todo assert blockBytes.length == blockSizeBytes : "Block size does not match";
