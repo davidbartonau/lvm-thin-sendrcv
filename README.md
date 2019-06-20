@@ -1,6 +1,11 @@
 # lvm-thin-sendrcv
 Send and receive incremental / thin LVM snapshots.  Synchronise an LVM volume to a remote server by transmitting only the difference between snapshots.
 
+# Status
+Currently barely working, but could be useful with a bit of duct tape.
+Refer to LVMSnapSend.md https://github.com/davidbartonau/lvm-thin-sendrcv/blob/master/LVMSnapSend.md
+Also useful is DDRandom.md https://github.com/davidbartonau/lvm-thin-sendrcv/blob/master/DDRandom.md
+
 # Purpose 
 LVM volumes (LVs) are useful, however synchronising them between machines is generally slow, especially when repeated.  The goals of this project are:
 - Synchronise LVs between machines similar to a zfs send / receive
