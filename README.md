@@ -3,7 +3,9 @@ Send and receive incremental / thin LVM snapshots.  Synchronise an LVM volume to
 
 # Status
 Currently barely working, but could be useful with a bit of duct tape.
+
 Refer to LVMSnapSend.md https://github.com/davidbartonau/lvm-thin-sendrcv/blob/master/LVMSnapSend.md
+
 Also useful is DDRandom.md https://github.com/davidbartonau/lvm-thin-sendrcv/blob/master/DDRandom.md
 
 # Purpose 
