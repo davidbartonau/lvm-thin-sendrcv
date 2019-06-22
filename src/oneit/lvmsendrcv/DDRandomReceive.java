@@ -15,11 +15,11 @@ import org.xml.sax.SAXException;
  */
 public class DDRandomReceive 
 {
-    public final int    blockSizeBytes;
+    public final long   blockSizeBytes;
     public final String outputFile;
 
     
-    public DDRandomReceive(int blockSizeBytes, String outputFile) 
+    public DDRandomReceive(long blockSizeBytes, String outputFile) 
     {
         this.blockSizeBytes = blockSizeBytes;
         this.outputFile = outputFile;
@@ -36,7 +36,7 @@ public class DDRandomReceive
         {
             for (Node blockNode : XMLUtils.getXPathNodes(doc, "dd/block"))
             {
-                int     blockOffset = blockSizeBytes * Integer.parseInt(XMLUtils.getXPathVal(blockNode, "@offset"));
+                long    blockOffset = blockSizeBytes * Integer.parseInt(XMLUtils.getXPathVal(blockNode, "@offset"));
                 String  blockContent = XMLUtils.getXPathVal(blockNode, "text()");
                 byte[]  blockBytes = Base64.getDecoder().decode(blockContent);
 
