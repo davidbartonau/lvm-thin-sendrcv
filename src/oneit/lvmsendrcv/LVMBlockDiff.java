@@ -17,7 +17,7 @@ public class LVMBlockDiff
 {
     public static LVMSnapshotDiff diffLVMSnapshots (String vgName, String snapshot1, String snapshot2) throws LVM.LVMException, InterruptedException, IOException
     {
-        Map<String, LVM.LVMSnapshot>    snapshotInfo = LVM.getSnapshotInfo(vgName, snapshot1, snapshot2);
+        Map<String, LVM.LVMSnapshot>    snapshotInfo = LVM.getSnapshotInfo(new String[] { vgName + '/' + snapshot1, vgName + '/' + snapshot2 });
         
         System.err.println (snapshotInfo); // @todo
         

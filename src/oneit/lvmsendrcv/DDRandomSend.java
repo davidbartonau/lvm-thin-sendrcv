@@ -29,7 +29,7 @@ public class DDRandomSend
 
    
         
-    public void readData () throws IOException, SAXException, ParserConfigurationException, XPathExpressionException
+    public void readData () throws IOException
     {
         try (RandomAccessFile       infileRO = new RandomAccessFile(inputFile, "r"))
         {

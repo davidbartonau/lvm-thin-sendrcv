@@ -31,16 +31,15 @@ public class LVM
     
     
     /**
-     * getSnapshotInfo ("volg", "thin_volume_snap2", "thin_volume_snap1")
+     * getSnapshotInfo ("volg/thin_volume_snap2", "volg/thin_volume_snap1")
      * @param vgName
-     * @param snapshot1
-     * @param snapshot2
+     * @param snapshotNames 
      * @return map of LVMSnapshot keyed by name
      */
-    public static Map<String, LVMSnapshot> getSnapshotInfo (String vgName, String snapshot1, String snapshot2) throws LVMException
+    public static Map<String, LVMSnapshot> getSnapshotInfo (String[] snapshotNames) throws LVMException
     {
         // EXEC lvs --reportformat json -o lv_name,vg_name,pool_lv,thin_id volg/thin_volume_snap2 volg/thin_volume_snap1
-        List<JSONObject>            snapshots = execLVS(LVMSnapshot.LVS_COLUMNS, new String[] { vgName + "/" + snapshot1, vgName + "/" + snapshot2 });
+        List<JSONObject>            snapshots = execLVS(LVMSnapshot.LVS_COLUMNS, snapshotNames);
         Map<String, LVMSnapshot>    result = new HashMap<>();
 
         for (JSONObject  lvsnapJSON : snapshots)
@@ -104,16 +103,18 @@ public class LVM
         public final String  snapshotName;
         public final String  vgName;
         public final String  poolLV;
-        public final int     thinID;
+        public final Integer thinID;
 
         public LVMSnapshot(JSONObject lvsnap) throws LVMException
         {
             try
             {
+                String              thinIDStr = lvsnap.getString("thin_id");
+                
                 this.snapshotName   = lvsnap.getString("lv_name");
                 this.vgName         = lvsnap.getString("vg_name");
                 this.poolLV         = lvsnap.getString("pool_lv");
-                this.thinID         = Integer.parseInt(lvsnap.getString("thin_id"));
+                this.thinID         = thinIDStr.equals("") ? null : Integer.parseInt(thinIDStr);
             }
             catch (Exception e)
             {
