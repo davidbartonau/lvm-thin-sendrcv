@@ -2,11 +2,9 @@
 Send and receive incremental / thin LVM snapshots.  Replication / synchronisation of an LVM volume to a remote server by transmitting only the difference between snapshots.
 
 # Status
-Working in an initial form.  Needs a little setup, documented at the link below.  Remember, you must **never write to the target volume**.
+Working in an initial form.  Needs a little setup, documented at [LVMSnapSend.md](LVMSnapSend.md).  Remember, you must **never write to the target volume**.
 
-Refer to LVMSnapSend.md https://github.com/davidbartonau/lvm-thin-sendrcv/blob/master/LVMSnapSend.md
-
-Also useful is DDRandom.md https://github.com/davidbartonau/lvm-thin-sendrcv/blob/master/DDRandom.md
+Also useful is [DDRandom.md](DDRandom.md)
 
 # Purpose 
 LVM volumes (LVs) are useful, however synchronising them between machines is generally slow, especially when repeated.  The goals of this project are:
@@ -72,3 +70,8 @@ dmsetup message /dev/mapper/volg-volg--thinpool-tpool 0 release_metadata_snap
 - Blocksync https://github.com/theraser/blocksync is very good but reads the entire LV.  For large LVs this is **slow** and consumes IO on the source and target
 - lvsync https://github.com/mpalmer/lvmsync seems to have a lot of features **but** requires the LV to be closed / VM to be shut down.  It also does an initial full sync just like blocksync.
 - drdb https://www.linbit.com/ is costly if you want the proxy (and if running over a WAN, you need a proxy) and there is no easy way to verify the replicas as the other end
+
+# Sponsors
+This project is sponsored by:
+- [OneIT Custom Software](https://www.oneit.com.au)
+- [Secure Hosting Australia](https://www.secure-hosting.com.au)
