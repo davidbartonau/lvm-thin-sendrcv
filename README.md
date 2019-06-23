@@ -39,6 +39,22 @@ This is literally the start of the project.  So far there is nothing.  Goals for
 
 There is absolutely no intent to support synchronising without a snapshot.
 
+# Performance
+Running on a single AWS small instance and via SSH, I am getting changes detected, read, transferred, and written at roughly 10MB/s.  This means that for 50MB of writes, it takes ~5 seconds to do a sync.  This is irrespective of the size of the underlying device.  For devices in the 10s or 100s of GB this is a boon.
+
+Running rsyncs of large file collections in the 10s and 100s of MB total e.g. `/usr/bin` or `/usr/lib` the size of changed blocks is very close to the size of the files.  In other words, 10MB of files leads to 11 - 12 MB of block changes.
+
+This performance makes it seem reasonable that we could potentially be synchronising the device every minute (or more frequently) once a service has been written.
+
+# Alternatives
+- Blocksync https://github.com/theraser/blocksync is very good but reads the entire LV.  For large LVs this is **slow** and consumes IO on the source and target
+- lvsync https://github.com/mpalmer/lvmsync seems to have a lot of features **but** requires the LV to be closed / VM to be shut down.  It also does an initial full sync just like blocksync.
+- drdb https://www.linbit.com/ is costly if you want the proxy (and if running over a WAN, you need a proxy) and there is no easy way to verify the replicas as the other end
+
+# Sponsors
+This project is sponsored by:
+- [OneIT Custom Software](https://www.oneit.com.au)
+- [Secure Hosting Australia](https://www.secure-hosting.com.au)
 
 # Technical approach
 Thin LVM is not the most well documented API.  The high level approach for now is:
@@ -65,19 +81,3 @@ dmsetup message /dev/mapper/volg-volg--thinpool-tpool 0 release_metadata_snap
 # Take those blocks and push them to the target device / file.
 ```
 
-# Performance
-Running on a single AWS small instance and via SSH, I am getting changes detected, read, transferred, and written at roughly 10MB/s.  This means that for 50MB of writes, it takes ~5 seconds to do a sync.  This is irrespective of the size of the underlying device.  For devices in the 10s or 100s of GB this is a boon.
-
-Running rsyncs of large file collections in the 10s and 100s of MB total e.g. `/usr/bin` or `/usr/lib` the size of changed blocks is very close to the size of the files.  In other words, 10MB of files leads to 11 - 12 MB of block changes.
-
-This performance makes it seem reasonable that we could potentially be synchronising the device every minute (or more frequently) once a service has been written.
-
-# Alternatives
-- Blocksync https://github.com/theraser/blocksync is very good but reads the entire LV.  For large LVs this is **slow** and consumes IO on the source and target
-- lvsync https://github.com/mpalmer/lvmsync seems to have a lot of features **but** requires the LV to be closed / VM to be shut down.  It also does an initial full sync just like blocksync.
-- drdb https://www.linbit.com/ is costly if you want the proxy (and if running over a WAN, you need a proxy) and there is no easy way to verify the replicas as the other end
-
-# Sponsors
-This project is sponsored by:
-- [OneIT Custom Software](https://www.oneit.com.au)
-- [Secure Hosting Australia](https://www.secure-hosting.com.au)
