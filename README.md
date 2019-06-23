@@ -65,6 +65,12 @@ dmsetup message /dev/mapper/volg-volg--thinpool-tpool 0 release_metadata_snap
 # Take those blocks and push them to the target device / file.
 ```
 
+# Performance
+Running on a single AWS small instance and via SSH, I am getting changes detected, read, transferred, and written at roughly 10MB/s.  This means that for 50MB of writes, it takes ~5 seconds to do a sync.  This is irrespective of the size of the underlying device.  For devices in the 10s or 100s of GB this is a boon.
+
+Running rsyncs of large file collections in the 10s and 100s of MB total e.g. `/usr/bin` or `/usr/lib` the size of changed blocks is very close to the size of the files.  In other words, 10MB of files leads to 11 - 12 MB of block changes.
+
+This performance makes it seem reasonable that we could potentially be synchronising the device every minute (or more frequently) once a service has been written.
 
 # Alternatives
 - Blocksync https://github.com/theraser/blocksync is very good but reads the entire LV.  For large LVs this is **slow** and consumes IO on the source and target
