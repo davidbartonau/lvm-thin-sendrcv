@@ -1,6 +1,8 @@
 # DDRandomSend and DDRandomReceive
 This is a pair of utilities designed to work similarly to dd over an ssh tunnel, except that only specific blocks are transferred.
 
+The XML file is read using SAX, so memory overhead is minimised.
+
 The intent is something like:
 ```
 java oneit.lvmsendrcv.DDRandomSend --bs 1 --blocks 2,5,7 --if /tmp/some.file | java oneit.lvmsendrcv.DDRandomServe -bs 1 -of /tmp/other.file

@@ -5,9 +5,9 @@ import java.sql.*;
 import java.util.*;
 import javax.xml.parsers.*;
 import javax.xml.xpath.XPathExpressionException;
-import org.w3c.dom.*;
 import org.apache.commons.cli.*;
-import org.xml.sax.SAXException;
+import org.xml.sax.*;
+import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * 
@@ -28,24 +28,16 @@ public class DDRandomReceive
     
     public void writeData () throws IOException, SAXException, ParserConfigurationException, XPathExpressionException
     {
-        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder        dBuilder = dbFactory.newDocumentBuilder();        
-        Document               doc = dBuilder.parse(System.in);
+        SAXParserFactory        factory = SAXParserFactory.newInstance();
+        SAXParser               saxParser = factory.newSAXParser();
 
         try (RandomAccessFile       outfileRW = new RandomAccessFile(outputFile, "rw"))
         {
-            for (Node blockNode : XMLUtils.getXPathNodes(doc, "dd/block"))
-            {
-                long    blockOffset = blockSizeBytes * Integer.parseInt(XMLUtils.getXPathVal(blockNode, "@offset"));
-                String  blockContent = XMLUtils.getXPathVal(blockNode, "text()");
-                byte[]  blockBytes = Base64.getDecoder().decode(blockContent);
-
-                // @todo assert blockBytes.length == blockSizeBytes : "Block size does not match";
-
-                System.out.println("Block " + blockOffset + ":" + blockBytes.length); // @todo use proper logging
-                outfileRW.seek(blockOffset);
-                outfileRW.write(blockBytes);
-            }
+            DDReceiveSAXHandler handler = new DDReceiveSAXHandler(outfileRW);
+            
+            saxParser.parse(System.in, handler);
+            
+            System.err.println("DDRandomReceive: Written " + handler.blocksWritten + " blocks");
         }
     }
     
@@ -91,4 +83,67 @@ public class DDRandomReceive
             System.exit(1);
         }
     }   
+    
+    
+    public class DDReceiveSAXHandler extends DefaultHandler
+    {
+        RandomAccessFile    outfileRW;
+        StringBuilder       blockBuffer = new StringBuilder();
+        long                blockOffset;
+        int                 blocksWritten = 0;
+        
+        
+        private DDReceiveSAXHandler(RandomAccessFile outfileRW) 
+        {
+            this.outfileRW= outfileRW;
+        }
+
+        
+        @Override
+        public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException 
+        {
+            if (qName.equals("block"))
+            {
+                blockBuffer = new StringBuilder();
+                blockOffset = blockSizeBytes * Integer.parseInt(attributes.getValue("offset"));
+            }
+        }
+
+        
+        @Override
+        public void endElement(String uri, String localName, String qName) throws SAXException 
+        {
+            if (qName.equals("block"))
+            {
+                String  blockContent = blockBuffer.toString();
+                byte[]  blockBytes = Base64.getDecoder().decode(blockContent);
+
+                assert blockBytes.length == blockSizeBytes : "Block size does not match";
+
+                System.err.println("DDRandomReceive: Receive Block " + blockOffset + ":" + blockBytes.length); // @todo use proper logging
+                
+                try
+                {
+                    outfileRW.seek(blockOffset);
+                    outfileRW.write(blockBytes);
+                    blocksWritten++;
+                }
+                catch(IOException e)
+                {
+                    System.err.println("Unable to write file:" + e.getMessage());
+                    System.exit (1);
+                }
+                
+                blockBuffer = new StringBuilder();
+            }
+        }
+
+        
+        @Override
+        public void characters(char[] ch, int start, int length) throws SAXException 
+        {
+            blockBuffer.append(new String(ch, start, length));
+        }
+
+    }
 }
