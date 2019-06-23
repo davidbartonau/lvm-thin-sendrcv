@@ -42,8 +42,8 @@ public class LVMSnapSend
             }
             else
             {
-                String                          vg      = cmdLine.getOptionValue("vg");                
-                String                          lv      = cmdLine.getOptionValue("lv");                
+                String                          vg      = Utils.getMandatoryString("vg", cmdLine, options);
+                String                          lv      = Utils.getMandatoryString("lv", cmdLine, options);
                 Map<String, LVM.LVMSnapshot>    snapshots = LVM.getSnapshotInfo(new String[] { vg });
                 SortedSet<String>               sendrcvSnapshotNames = new TreeSet<>();
                 
@@ -84,6 +84,7 @@ public class LVMSnapSend
                     System.err.println("LVMSnapSend not intialised");
                     System.err.println("    # First take a baseline snapshot:");
                     System.err.println("    lvcreate -s -n " + snapshotTo + " " + vg + '/' + lv);
+                    System.err.println("    lvchange -ay -Ky " + vg + '/' + lv);
                     System.err.println();
                     System.err.println("    # Then sent it to the destination:");
                     System.err.println("    python blocksync.py -c aes128-ctr /dev/" + vg + "/" + snapshotTo + " root@server /dev/remotevg/remotelv ");
