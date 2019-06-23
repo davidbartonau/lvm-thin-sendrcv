@@ -1,8 +1,8 @@
 # lvm-thin-sendrcv
-Send and receive incremental / thin LVM snapshots.  Synchronise an LVM volume to a remote server by transmitting only the difference between snapshots.
+Send and receive incremental / thin LVM snapshots.  Replication / synchronisation of an LVM volume to a remote server by transmitting only the difference between snapshots.
 
 # Status
-Currently barely working, but could be useful with a bit of duct tape.
+Working in an initial form.  Needs a little setup, documented at the link below.  Remember, you must **never write to the target volume**.
 
 Refer to LVMSnapSend.md https://github.com/davidbartonau/lvm-thin-sendrcv/blob/master/LVMSnapSend.md
 
@@ -12,10 +12,10 @@ Also useful is DDRandom.md https://github.com/davidbartonau/lvm-thin-sendrcv/blo
 LVM volumes (LVs) are useful, however synchronising them between machines is generally slow, especially when repeated.  The goals of this project are:
 - Synchronise LVs between machines similar to a zfs send / receive
 - No need to read the entire LV to run a sync (low IO)
-- Does not have a big performance penalty
+- Does not have a large performance penalty in either reads, writes, or CPU.
 - Able to verify and mount the snapshots 
 - No need to unmount the volume / shut down the virtual machine
-- Filesystem and encryption agnostic.  I should be able to sync ext4 or xfs.
+- Filesystem and encryption agnostic.  I should be able to sync ext4, xfs, etc.
 
 The use case I am aiming for is to have VM images synchronised across to another server.
 
@@ -26,20 +26,21 @@ I will be testing on Ubuntu, but welcome feedback for other platforms / OSes.
 
 # Goals
 This is literally the start of the project.  So far there is nothing.  Goals for the project are:
-- Write useful libraries to snapshot the LV, snapshot the thin metadata, and extract the changed blocks and block sizes
-- Basic proof of concept.  Synchronise two manually created snapshots between 2 servers.  Probably using dd over ssh or something else lame.
-- Extract things like block size and thin volume using lvs and co.
-- Create and delete the snapshots as well as synchronise
+- ~~Write useful libraries to snapshot the LV, snapshot the thin metadata, and extract the changed blocks and block sizes~~
+- ~~Basic proof of concept.  Synchronise two manually created snapshots between 2 servers.  Probably using dd over ssh or something else lame.~~
+- ~~Extract things like block size and thin volume using lvs and co.~~
+- ~~Create and delete the snapshots as well as synchronise~~
 - Server mode over ssh
 - Run as a daemon so that your LVs are continuously synchronised.  This requires robust error handling
-- Alerts / monitoring
+- Alerts / monitoring / emails
 - Ensure continuous consistency at the destination e.g. when there is a failure partway through the sync.  Probably by snapshotting at the destination.
 - Allowing for synchronising to a file.  This would be VERY useful.
-- Verify the snapshot at both ends
+- Verify the snapshot at both ends (probably daily, as otherwise we are reading the LV every time)
 - Automate the original send (something like blocksync) and possibly LV or file creation.
 - World domination!
 
 There is absolutely no intent to support synchronising without a snapshot.
+
 
 # Technical approach
 Thin LVM is not the most well documented API.  The high level approach for now is:
