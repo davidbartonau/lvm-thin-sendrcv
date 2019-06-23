@@ -13,7 +13,7 @@ import org.json.JSONObject;
  */
 public class LVMSnapSend 
 {
-    public static final DateFormat    DATE_FORMAT = new SimpleDateFormat("yyyyMMdd_HHmm");
+    public static final DateFormat    DATE_FORMAT = new SimpleDateFormat("yyyyMMdd_HHmmss");
     
     /**
      * @param args the command line arguments
