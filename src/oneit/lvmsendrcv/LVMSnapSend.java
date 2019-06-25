@@ -1,5 +1,7 @@
 package oneit.lvmsendrcv;
 
+import oneit.lvmsendrcv.utils.Utils;
+import oneit.lvmsendrcv.utils.ExecUtils;
 import java.io.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;

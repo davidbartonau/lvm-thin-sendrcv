@@ -1,5 +1,7 @@
 package oneit.lvmsendrcv;
 
+import oneit.lvmsendrcv.utils.ExecUtils;
+import oneit.lvmsendrcv.utils.XMLUtils;
 import java.io.*;
 import java.util.*;
 import javax.xml.parsers.*;

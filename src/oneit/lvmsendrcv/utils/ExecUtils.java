@@ -1,4 +1,4 @@
-package oneit.lvmsendrcv;
+package oneit.lvmsendrcv.utils;
 
 import java.util.*;
 import java.io.*;
@@ -23,7 +23,7 @@ public class ExecUtils
         return newThread;
     }
     
-    static class ExecuteProcess 
+    public static class ExecuteProcess 
     {
         private String      homeDirectory;
         private String[]    command;

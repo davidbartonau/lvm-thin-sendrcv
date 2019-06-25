@@ -1,4 +1,4 @@
-package oneit.lvmsendrcv;
+package oneit.lvmsendrcv.utils;
 
 import java.io.*;
 

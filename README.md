@@ -23,7 +23,7 @@ This is only intended to run on thinly provisioned LVM.
 I will be testing on Ubuntu, but welcome feedback for other platforms / OSes.
 
 # Goals
-This is literally the start of the project.  So far there is nothing.  Goals for the project are:
+~~This is literally the start of the project.  So far there is nothing.  ~~Goals for the project are:
 - ~~Write useful libraries to snapshot the LV, snapshot the thin metadata, and extract the changed blocks and block sizes~~
 - ~~Basic proof of concept.  Synchronise two manually created snapshots between 2 servers.  Probably using dd over ssh or something else lame.~~
 - ~~Extract things like block size and thin volume using lvs and co.~~
@@ -35,6 +35,7 @@ This is literally the start of the project.  So far there is nothing.  Goals for
 - Allowing for synchronising to a file.  This would be VERY useful.
 - Verify the snapshot at both ends (probably daily, as otherwise we are reading the LV every time)
 - Automate the original send (something like blocksync) and possibly LV or file creation.
+- Alerting on thin pool size and metadata usage
 - World domination!
 
 There is absolutely no intent to support synchronising without a snapshot.
