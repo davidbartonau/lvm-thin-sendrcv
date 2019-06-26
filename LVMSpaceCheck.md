@@ -10,8 +10,12 @@ Run the command every few seconds.  Suitable for running as a daemon.  Need a sc
 ```
 java -cp lvm-thin-sendrcv/lvm-thin-sendrcv.jar oneit.lvmsendrcv.LVMSpaceCheck --checkInterval 10
 ```
+## When Space is Exceeded
+When the configured space is exceeded, an alert email is sent on the 1, 10, 100, 1000th failure.
 
-## Autoresizing
+When the system returns to normal, the error count is reverted.
+
+### Autoresizing
 TODO.  Would be nice to have
 
 ## Help
@@ -37,6 +41,10 @@ monitor.vgreplica/vgreplica-thinpoolreplica.metaLimit=50
 The system generates some information to stdout
 
 If the system exceeds the limit, then an email will be sent like:
-> Subject: [lvmsendrcv] Data Limit exceeded
-> volg-thinpool : Data
-> 70.32 > 70.0
+```
+Subject: [lvmsendrcv] DATA Limit exceeded volg-thinpool
+Volume:volg/volg-thinpool : DATA
+Usage:78.49 > 70.0
+Count:10
+lvextend -L+1G volg/volg-thinpool
+```
