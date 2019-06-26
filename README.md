@@ -4,6 +4,7 @@ Send and receive incremental / thin LVM snapshots.  Replication / synchronisatio
 # Status
 Working in an initial form.  Needs a little setup, documented at [LVMSnapSend.md](LVMSnapSend.md).  Remember, you must **never write to the target volume**.
 
+Monitor your thin LVs using [LVMSpaceCheck](LVMSpaceCheck.md)
 Also useful is [DDRandom.md](DDRandom.md)
 
 # Purpose 

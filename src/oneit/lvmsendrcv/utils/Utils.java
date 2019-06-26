@@ -1,8 +1,7 @@
 package oneit.lvmsendrcv.utils;
 
 import java.io.*;
-import java.util.Enumeration;
-import java.util.Properties;
+import java.util.*;
 import javax.mail.*;  
 import javax.mail.internet.*;  
 //import javax.activation.*;  
@@ -38,6 +37,40 @@ public class Utils
     
     
 
+    /**
+     * Returns the unique property names up to the delimiting character
+     * a.foo
+     * a.bar
+     * b.baz
+     * In the example above, if the delimiting character is . then a and b would be returned
+     * 
+     * @param source the source properties
+     * @param delimiter the delimiter for this group.  The group is taken to the first occurence of the delimiter.
+     * @param includeNoDelimiter should the result include properties that do not include the delimiter
+     */
+    public static Set<String> getPropertyGroups (Properties source, char delimiter, boolean includeNoDelimiter)
+    {
+        Set<String>     result = new HashSet<>();
+        
+        for (String propertyName : source.stringPropertyNames() )
+        {
+            int delimIndex = propertyName.indexOf(delimiter);
+            
+            if (delimIndex >= 0)
+            {
+                result.add(propertyName.substring(0, delimIndex));
+            }
+            else if (includeNoDelimiter)
+            {
+                result.add(propertyName);
+            }
+        }
+
+        return result;
+        
+    }
+    
+    
     /**
      * Returns a Property set consisting of all Properties in source that start with a specified prefix.
      * The properties returned will have prefix removed from the key.
@@ -98,6 +131,9 @@ public class Utils
     
     public static void main (String[] args)
     {
+        System.err.println("Java Mail Properties:" + JAVA_MAIL_PROPERTIES); // @todo
+        System.err.println("Config Properties:" + CONFIG_PROPERTIES); // @todo
+        
         sendEmail(args[0], args[1]);
     }
 }
