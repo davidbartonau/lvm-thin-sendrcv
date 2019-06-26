@@ -52,6 +52,7 @@ This performance makes it seem reasonable that we could potentially be synchroni
 - Blocksync https://github.com/theraser/blocksync is very good but reads the entire LV.  For large LVs this is **slow** and consumes IO on the source and target
 - lvsync https://github.com/mpalmer/lvmsync seems to have a lot of features **but** requires the LV to be closed / VM to be shut down.  It also does an initial full sync just like blocksync.
 - drdb https://www.linbit.com/ is costly if you want the proxy (and if running over a WAN, you need a proxy) and there is no easy way to verify the replicas as the other end
+- sparsebak https://github.com/tasket/sparsebak seems to be aimed at backups rather than replication
 
 # Sponsors
 This project is sponsored by:
