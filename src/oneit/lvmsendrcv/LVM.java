@@ -12,6 +12,25 @@ import org.json.*;
 public class LVM 
 {
     /**
+     * getVGInfo (["volg"])
+     * @param vgNames
+     * @return
+     */
+    public static VGInfo getVGInfo (String vgName) throws LVMException
+    {
+        List<JSONObject>            vgs = execVGS(VGInfo.VGS_COLUMNS, new String[] { vgName });
+
+        if (vgs.size() != 1)
+        {
+            throw new LVMException("VGs.length != 1 : " + vgs.size() + " " + vgs);
+        }
+        
+        return new VGInfo(vgs.get(0));
+        
+    }
+    
+    
+    /**
      * getThinPoolInfo ("volg", "volg-thinpool")
      * @param vgName
      * @param thinPool
@@ -56,33 +75,45 @@ public class LVM
     
     public static List<JSONObject> execLVS (String columns, String[] vols) throws LVMException
     {
-        List<String>    lvsArgs         = new ArrayList<>();
-        String          lvsOutputStr;
+        return execLVM_JSON("/sbin/lvs", "lv", columns, vols);
+    }
+
+    
+    public static List<JSONObject> execVGS (String columns, String[] vgs) throws LVMException
+    {
+        return execLVM_JSON("/sbin/vgs", "vg", columns, vgs);
+    }
+
+    
+    public static List<JSONObject> execLVM_JSON (String command, String jsonReport, String columns, String[] args) throws LVMException
+    {
+        List<String>    lvmArgs         = new ArrayList<>();
+        String          lvmOutputStr;
         
-        lvsArgs.addAll(Arrays.asList("/sbin/lvs", "--reportformat", "json", "-o", columns));
-        lvsArgs.addAll(Arrays.asList(vols));
+        lvmArgs.addAll(Arrays.asList(command, "--reportformat", "json", "-o", columns));
+        lvmArgs.addAll(Arrays.asList(args));
         
         try
         {
-            byte[]          lvsOutput           = new ExecUtils.ExecuteProcess ("/tmp/", lvsArgs.toArray(new String[0])).setHideStdOut(true).executeAsBytes();
+            byte[]          lvsOutput           = new ExecUtils.ExecuteProcess ("/tmp/", lvmArgs.toArray(new String[0])).setHideStdOut(true).executeAsBytes();
             
-            lvsOutputStr        = new String (lvsOutput);
+            lvmOutputStr        = new String (lvsOutput);
         }
         catch (Exception e)
         {
-            System.err.println("problem running lvs:" + e.getMessage()); //@todo
+            System.err.println("problem running "+ command + ":" + e.getMessage()); //@todo
             throw new LVMException(e);
         }
         
         try
         {
-            JSONObject          lvsOutputJSON   = new JSONObject(lvsOutputStr);
-            JSONArray           lvsOutputArray  = lvsOutputJSON.getJSONArray("report").getJSONObject(0).getJSONArray("lv");
+            JSONObject          lvmOutputJSON   = new JSONObject(lvmOutputStr);
+            JSONArray           lvmOutputArray  = lvmOutputJSON.getJSONArray("report").getJSONObject(0).getJSONArray(jsonReport);
             List<JSONObject>    result          = new ArrayList<>();
 
-            for (int x = 0 ; x < lvsOutputArray.length() ; ++x)
+            for (int x = 0 ; x < lvmOutputArray.length() ; ++x)
             {
-                JSONObject  outputRow = lvsOutputArray.getJSONObject(x);
+                JSONObject  outputRow = lvmOutputArray.getJSONObject(x);
                 
                 result.add (outputRow);
             }
@@ -91,12 +122,42 @@ public class LVM
         }
         catch (Exception e)
         {
-            System.err.println("problem parsing lvs output:" + e.getMessage() + "\n" + lvsOutputStr); //@todo
+            System.err.println("problem parsing " + command + " output:" + e.getMessage() + "\n" + lvmOutputStr); //@todo
             throw new LVMException(e);
         }
-        
     }
 
+    
+    public static class VGInfo
+    {
+        static final String VGS_COLUMNS = "vg_name,vg_free";
+        
+        public final String  vgName;
+        public final String  vgFree;
+
+        public VGInfo(JSONObject vgsnap) throws LVMException
+        {
+            try
+            {
+                this.vgName         = vgsnap.getString("vg_name");
+                this.vgFree         = vgsnap.getString("vg_free");
+            }
+            catch (Exception e)
+            {
+                System.err.println("problem parsing vgs output:" + e.getMessage() + "\n" + vgsnap); //@todo
+                throw new LVMException(e);
+            }
+        }
+
+        
+        @Override
+        public String toString() 
+        {
+            return "VGInfo " + vgName + " has " + vgFree + " free";
+        }
+    }
+    
+    
     public static class LVMSnapshot
     {
         static final String LVS_COLUMNS = "lv_name,vg_name,pool_lv,thin_id";

@@ -109,7 +109,7 @@ public class LVMSpaceCheck
     }
 
     
-    private static void checkSpace(String vg, String lv, double limitPercent, double actualUsage, ThinSpaceType type) 
+    private static void checkSpace(String vg, String lv, double limitPercent, double actualUsage, ThinSpaceType type) throws LVM.LVMException
     {
         String  errorCountKey = vg + "/" + lv + ":" + type;
         
@@ -125,13 +125,15 @@ public class LVMSpaceCheck
             
             if (errorCount == 0 || errorCount == 10 || errorCount == 100 || errorCount == 1000)
             {
+                String      vgFreeSpace = LVM.getVGInfo (vg).vgFree;
                 String      extendCmd = (type == ThinSpaceType.DATA) ? "lvextend -L+1G " + vg + "/" + lv
                                                                      : "lvextend --poolmetadatasize +10M " + vg + "/" + lv;
                 System.err.println(type + " limit of " + limitPercent + " exceeded by actual " + actualUsage + " Sending email"); // @todo
                 Utils.sendEmail("[lvmsendrcv] " + type + " Limit exceeded " + lv, 
-                                 "Volume:" + vg + "/" + lv + " : " + type + "\n" + 
-                                 "Usage:" + actualUsage + " > " + limitPercent + "\n" + 
-                                 "Count:" + errorCount + "\n" +
+                                 "Volume:       " + vg + "/" + lv + "\n" + 
+                                 "Usage:        " + type + " " + actualUsage + " > " + limitPercent + "\n" + 
+                                 "Count:        " + errorCount + "\n" +
+                                 "VG Free Space:" + vgFreeSpace + "\n\n" +
                                  extendCmd);
             }
             else
