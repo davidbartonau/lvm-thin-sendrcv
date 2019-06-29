@@ -3,12 +3,12 @@ If you don't want to autoextend your thin partitions e.g. because you want to be
 
 Run the command once and then exit.  Suitable for a cron job.
 ```
-java -cp lvm-thin-sendrcv/lvm-thin-sendrcv.jar oneit.lvmsendrcv.LVMSpaceCheck
+java -cp lvm-thin-sendrcv/lvm-thin-sendrcv.jar oneit.lvmsendrcv.service.LVMSpaceCheck
 ```
 
 Run the command every few seconds.  Suitable for running as a daemon.  Need a script for restarting ...
 ```
-java -cp lvm-thin-sendrcv/lvm-thin-sendrcv.jar oneit.lvmsendrcv.LVMSpaceCheck --checkInterval 10
+java -cp lvm-thin-sendrcv/lvm-thin-sendrcv.jar oneit.lvmsendrcv.service.LVMSpaceCheck --checkInterval 10
 ```
 ## When Space is Exceeded
 When the configured space is exceeded, an alert email is sent on the 1, 10, 100, 1000th failure.

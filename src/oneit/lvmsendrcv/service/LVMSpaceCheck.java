@@ -1,6 +1,7 @@
-package oneit.lvmsendrcv;
+package oneit.lvmsendrcv.service;
 
 import java.util.*;
+import oneit.lvmsendrcv.LVM;
 import oneit.lvmsendrcv.utils.*;
 import org.apache.commons.cli.*;
 import org.json.*;
