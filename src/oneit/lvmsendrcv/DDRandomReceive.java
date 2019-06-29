@@ -26,7 +26,7 @@ public class DDRandomReceive
     }
     
     
-    public void writeData () throws IOException, SAXException, ParserConfigurationException, XPathExpressionException
+    public void writeData (InputStream in) throws IOException, SAXException, ParserConfigurationException, XPathExpressionException
     {
         SAXParserFactory        factory = SAXParserFactory.newInstance();
         SAXParser               saxParser = factory.newSAXParser();
@@ -35,7 +35,7 @@ public class DDRandomReceive
         {
             DDReceiveSAXHandler handler = new DDReceiveSAXHandler(outfileRW);
             
-            saxParser.parse(System.in, handler);
+            saxParser.parse(in, handler);
             
             System.err.println("DDRandomReceive: Written " + handler.blocksWritten + " blocks");
         }
@@ -74,7 +74,7 @@ public class DDRandomReceive
                 int             bs = 1024 * Integer.parseInt(cmdLine.getOptionValue("bs"));
                 DDRandomReceive ddRandomReceive = new DDRandomReceive(bs, of);
                 
-                ddRandomReceive.writeData();
+                ddRandomReceive.writeData(System.in);
             }
         }
         catch (Exception e)
