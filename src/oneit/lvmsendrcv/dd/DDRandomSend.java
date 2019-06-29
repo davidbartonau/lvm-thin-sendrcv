@@ -29,13 +29,13 @@ public class DDRandomSend
 
    
         
-    public void readData () throws IOException
+    public void sendChangedBlocks (PrintStream out) throws IOException
     {
         try (RandomAccessFile       infileRO = new RandomAccessFile(inputFile, "r"))
         {
             byte[]  blockbuffer = new byte[blockSizeBytes];
 
-            System.out.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n\n<dd>");
+            out.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n\n<dd>");
 
             for (long block : blocks)
             {
@@ -43,13 +43,13 @@ public class DDRandomSend
                 infileRO.seek(block * blockSizeBytes);
                 infileRO.readFully(blockbuffer);    // @todo what if there are not enough bytes left?
                 
-                System.out.print("<block offset='" + block + "'>");
-                System.out.print(Base64.getEncoder().encodeToString(blockbuffer));
-                System.out.print("</block>");
-                System.out.println();
+                out.print("<block offset='" + block + "'>");
+                out.print(Base64.getEncoder().encodeToString(blockbuffer));
+                out.print("</block>");
+                out.println();
             }
 
-            System.out.println("</dd>");
+            out.println("</dd>");
             
             System.err.println("DDRandomSend: Written " + blocks.length + " blocks");
         }
@@ -97,7 +97,7 @@ public class DDRandomSend
                 
                 DDRandomSend    ddRandomSend = new DDRandomSend(bs, inf, blocks);
                 
-                ddRandomSend.readData();
+                ddRandomSend.sendChangedBlocks(System.out);
             }
         }
         catch (Exception e)

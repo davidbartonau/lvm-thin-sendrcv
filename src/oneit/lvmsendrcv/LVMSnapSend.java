@@ -30,6 +30,7 @@ public class LVMSnapSend
 
             options.addOption("vg", "volGroup", true, "The volume group e.g. volg");
             options.addOption("lv", "logicalVolume", true, "The logical volume to snapshot and send e.g. thin_volume");
+            options.addOption("to", "targetPath", true, "The full target path to write to at the destination");
             options.addOption("h", "help", false, "Print usage help.");
 
             CommandLine  cmdLine = parser.parse(options, args);
@@ -45,9 +46,10 @@ public class LVMSnapSend
             }
             else
             {
-                String                          vg      = Utils.getMandatoryString("vg", cmdLine, options);
-                String                          lv      = Utils.getMandatoryString("lv", cmdLine, options);
-                Map<String, LVM.LVMSnapshot>    snapshots = LVM.getSnapshotInfo(new String[] { vg });
+                String                          vg          = Utils.getMandatoryString("vg", cmdLine, options);
+                String                          lv          = Utils.getMandatoryString("lv", cmdLine, options);
+                String                          targetPath  = Utils.getMandatoryString("to", cmdLine, options);
+                Map<String, LVM.LVMSnapshot>    snapshots   = LVM.getSnapshotInfo(new String[] { vg });
                 SortedSet<String>               sendrcvSnapshotNames = new TreeSet<>();
                 
                 for (String snapshotName : snapshots.keySet())
@@ -68,7 +70,7 @@ public class LVMSnapSend
 
                     try
                     {
-                        snapSend(vg, snapshotFrom, snapshotTo);                
+                        snapSend(vg, snapshotFrom, snapshotTo, targetPath);                
                         removeLVMSnapshot(vg, snapshotFrom);
                         successful = true;
                     }
@@ -108,7 +110,7 @@ public class LVMSnapSend
         }
     }   
 
-    public static void snapSend(String vg, String snap1, String snap2) throws InterruptedException, IOException, LVM.LVMException
+    public static void snapSend(String vg, String snap1, String snap2, String targetPath) throws InterruptedException, IOException, LVM.LVMException
     {
         LVMBlockDiff.LVMSnapshotDiff    diff    = LVMBlockDiff.diffLVMSnapshots(vg, snap1, snap2);
         int[]                           blocks  = new int[diff.getDifferentBlocks().size()];
@@ -126,7 +128,10 @@ public class LVMSnapSend
         {
             DDRandomSend    ddRandomSend = new DDRandomSend(diff.getChunkSizeKB() * 1024, "/dev/" + vg + "/" + snap2, blocks);
             
-            ddRandomSend.readData();
+            System.out.print(targetPath + '\0');
+            System.out.print(String.valueOf(diff.getChunkSizeKB() * 1024) + '\0');
+            
+            ddRandomSend.sendChangedBlocks(System.out);
         }
         finally
         {

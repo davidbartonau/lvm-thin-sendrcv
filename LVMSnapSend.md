@@ -64,7 +64,7 @@ rsync -av /etc /mnt/${VG}-${LV}/
 
 ## Run the initial synchronisation
 ```
-java -cp lvm-thin-sendrcv/lvm-thin-sendrcv.jar oneit.lvmsendrcv.LVMSnapSend --vg volg --lv thin_volume | ssh root@localhost "java -cp lvm-thin-sendrcv/lvm-thin-sendrcv.jar oneit.lvmsendrcv.DDRandomReceive --bs 64 --of /dev/vgreplica/thinv_replica"
+time java -cp lvm-thin-sendrcv/lvm-thin-sendrcv.jar oneit.lvmsendrcv.LVMSnapSend --vg volg --lv thin_volume --targetPath /dev/vgreplica/thinv_replica | ssh -C root@localhost "java -cp lvm-thin-sendrcv/lvm-thin-sendrcv.jar oneit.lvmsendrcv.LVMSnapReceive"
 
 # There will be an error, because the initial sync must be done manually
 lvcreate -s -n thin_volume_thinsendrcv_20190623_0554 volg/thin_volume
@@ -79,13 +79,13 @@ md5sum /dev/volg/thin_volume_thinsendrcv_* /dev/vgreplica/thinv_replica
 ## Regular Syncronisation
 ```
 rsync -av /usr/bin /mnt/${VG}-${LV}/usr/
-java -cp lvm-thin-sendrcv/lvm-thin-sendrcv.jar oneit.lvmsendrcv.LVMSnapSend --vg volg --lv thin_volume | ssh -C root@localhost "java -cp lvm-thin-sendrcv/lvm-thin-sendrcv.jar oneit.lvmsendrcv.DDRandomReceive --bs 64 --of /dev/vgreplica/thinv_replica"
+time java -cp lvm-thin-sendrcv/lvm-thin-sendrcv.jar oneit.lvmsendrcv.LVMSnapSend --vg volg --lv thin_volume --targetPath /dev/vgreplica/thinv_replica | ssh -C root@localhost "java -cp lvm-thin-sendrcv/lvm-thin-sendrcv.jar oneit.lvmsendrcv.LVMSnapReceive"
 
 rsync -av /var /mnt/${VG}-${LV}/
-java -cp lvm-thin-sendrcv/lvm-thin-sendrcv.jar oneit.lvmsendrcv.LVMSnapSend --vg volg --lv thin_volume | ssh -C root@localhost "java -cp lvm-thin-sendrcv/lvm-thin-sendrcv.jar oneit.lvmsendrcv.DDRandomReceive --bs 64 --of /dev/vgreplica/thinv_replica"
+time java -cp lvm-thin-sendrcv/lvm-thin-sendrcv.jar oneit.lvmsendrcv.LVMSnapSend --vg volg --lv thin_volume --targetPath /dev/vgreplica/thinv_replica | ssh -C root@localhost "java -cp lvm-thin-sendrcv/lvm-thin-sendrcv.jar oneit.lvmsendrcv.LVMSnapReceive"
 
 rsync -av /usr/lib /mnt/volg-thin_volume/usr/
-java -cp lvm-thin-sendrcv/lvm-thin-sendrcv.jar oneit.lvmsendrcv.LVMSnapSend --vg volg --lv thin_volume | ssh -C root@localhost "java -cp lvm-thin-sendrcv/lvm-thin-sendrcv.jar oneit.lvmsendrcv.DDRandomReceive --bs 64 --of /dev/vgreplica/thinv_replica"
+time java -cp lvm-thin-sendrcv/lvm-thin-sendrcv.jar oneit.lvmsendrcv.LVMSnapSend --vg volg --lv thin_volume --targetPath /dev/vgreplica/thinv_replica | ssh -C root@localhost "java -cp lvm-thin-sendrcv/lvm-thin-sendrcv.jar oneit.lvmsendrcv.LVMSnapReceive"
 
 # Verify that it all worked
 lvchange -ay -Ky /dev/volg/thin_volume_thinsendrcv_20190623_0610
@@ -107,6 +107,6 @@ dmsetup message /dev/mapper/volg-volg--thinpool-tpool 0 release_metadata_snap
 java -cp lvm-thin-sendrcv/lvm-thin-sendrcv.jar oneit.lvmsendrcv.LVMSnapSend --vg volg --s1 thin_volume_snap1 --s2 thin_volume_snap2 > /tmp/diff.ddxml
 
 # Currently split into 2 parts and I had to hardcode the block size at the destination
-cat /tmp/diff.ddxml | java -cp lvm-thin-sendrcv/lvm-thin-sendrcv.jar oneit.lvmsendrcv.DDRandomServe -bs 64 -of /dev/other.device
+cat /tmp/diff.ddxml | java -cp lvm-thin-sendrcv/lvm-thin-sendrcv.jar oneit.lvmsendrcv.LVSnapReceive
 
 ```
