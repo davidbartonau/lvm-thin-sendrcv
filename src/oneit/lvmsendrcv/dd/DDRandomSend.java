@@ -1,4 +1,4 @@
-package oneit.lvmsendrcv;
+package oneit.lvmsendrcv.dd;
 
 import java.io.*;
 import java.sql.*;
