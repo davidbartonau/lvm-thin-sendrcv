@@ -17,6 +17,20 @@ import org.json.JSONObject;
 public class LVMSnapSend 
 {
     public static final DateFormat    DATE_FORMAT = new SimpleDateFormat("yyyyMMdd_HHmmss");
+
+    private String          vg;
+    private String          lv;
+    private String          targetPath;
+    private PrintStream     out;
+
+    public LVMSnapSend(String vg, String lv, String targetPath, PrintStream out) 
+    {
+        this.vg = vg;
+        this.lv = lv;
+        this.targetPath = targetPath;
+        this.out = out;
+    }
+    
     
     /**
      * @param args the command line arguments
@@ -46,61 +60,12 @@ public class LVMSnapSend
             }
             else
             {
-                String                          vg          = Utils.getMandatoryString("vg", cmdLine, options);
-                String                          lv          = Utils.getMandatoryString("lv", cmdLine, options);
-                String                          targetPath  = Utils.getMandatoryString("to", cmdLine, options);
-                Map<String, LVM.LVMSnapshot>    snapshots   = LVM.getSnapshotInfo(new String[] { vg });
-                SortedSet<String>               sendrcvSnapshotNames = new TreeSet<>();
-                
-                for (String snapshotName : snapshots.keySet())
-                {
-                    if (snapshotName.matches(lv + "_thinsendrcv_.*"))
-                    {
-                        sendrcvSnapshotNames.add(snapshotName);
-                    }
-                }
-                
-                if (sendrcvSnapshotNames.size() == 1)
-                {
-                    String  snapshotFrom    = sendrcvSnapshotNames.first();
-                    String  snapshotTo      = lv + "_thinsendrcv_" + DATE_FORMAT.format(new Date ());
-                    boolean successful      = false;
+                LVMSnapSend   sender      = new LVMSnapSend(Utils.getMandatoryString("vg", cmdLine, options),
+                                                            Utils.getMandatoryString("lv", cmdLine, options),
+                                                            Utils.getMandatoryString("to", cmdLine, options),
+                                                            System.out);
 
-                    createLVMSnapshot(vg, lv, snapshotTo);
-
-                    try
-                    {
-                        snapSend(vg, snapshotFrom, snapshotTo, targetPath);                
-                        removeLVMSnapshot(vg, snapshotFrom);
-                        successful = true;
-                    }
-                    finally
-                    {
-                        if (!successful)
-                        {
-                            removeLVMSnapshot(vg, snapshotTo);
-                        }
-                    }
-                }
-                else if (sendrcvSnapshotNames.size() == 0)
-                {
-                    String  snapshotTo      = lv + "_thinsendrcv_" + DATE_FORMAT.format(new Date ());
-
-                    System.err.println("LVMSnapSend not intialised");
-                    System.err.println("    # First take a baseline snapshot:");
-                    System.err.println("    lvcreate -s -n " + snapshotTo + " " + vg + '/' + lv);
-                    System.err.println("    lvchange -ay -Ky " + vg + '/' + lv);
-                    System.err.println();
-                    System.err.println("    # Then sent it to the destination:");
-                    System.err.println("    python blocksync.py -c aes128-ctr /dev/" + vg + "/" + snapshotTo + " root@server /dev/remotevg/remotelv ");
-
-                    System.exit(1);
-                }
-                else
-                {
-                    System.err.println("LVMSnapSend Multiple matching snapshots:" + sendrcvSnapshotNames);
-                    System.exit(1);
-                }
+                sender.createSnapshotsAndSend();
             }
         }
         catch (Exception e)
@@ -110,9 +75,67 @@ public class LVMSnapSend
         }
     }   
 
-    public static void snapSend(String vg, String snap1, String snap2, String targetPath) throws InterruptedException, IOException, LVM.LVMException
+    
+    public void createSnapshotsAndSend () throws InterruptedException, IOException, LVM.LVMException
     {
-        LVMBlockDiff.LVMSnapshotDiff    diff    = LVMBlockDiff.diffLVMSnapshots(vg, snap1, snap2);
+        Map<String, LVM.LVMSnapshot>    snapshots   = LVM.getSnapshotInfo(new String[] { vg });
+        SortedSet<String>               sendrcvSnapshotNames = new TreeSet<>();
+
+        for (String snapshotName : snapshots.keySet())
+        {
+            if (snapshotName.matches(lv + "_thinsendrcv_.*"))
+            {
+                sendrcvSnapshotNames.add(snapshotName);
+            }
+        }
+
+        if (sendrcvSnapshotNames.size() == 1)
+        {
+            String  snapshotFrom    = sendrcvSnapshotNames.first();
+            String  snapshotTo      = lv + "_thinsendrcv_" + DATE_FORMAT.format(new Date ());
+            boolean successful      = false;
+
+            createLVMSnapshot(vg, lv, snapshotTo);
+
+            try
+            {
+                snapSend(snapshotFrom, snapshotTo);
+                removeLVMSnapshot(vg, snapshotFrom);
+                successful = true;
+            }
+            finally
+            {
+                if (!successful)
+                {
+                    removeLVMSnapshot(vg, snapshotTo);
+                }
+            }
+        }
+        else if (sendrcvSnapshotNames.size() == 0)
+        {
+            String  snapshotTo      = lv + "_thinsendrcv_" + DATE_FORMAT.format(new Date ());
+
+            System.err.println("LVMSnapSend not intialised");
+            System.err.println("    # First take a baseline snapshot:");
+            System.err.println("    lvcreate -s -n " + snapshotTo + " " + vg + '/' + lv);
+            System.err.println("    lvchange -ay -Ky " + vg + '/' + lv);
+            System.err.println();
+            System.err.println("    # Then sent it to the destination:");
+            System.err.println("    python blocksync.py -c aes128-ctr /dev/" + vg + "/" + snapshotTo + " root@server /dev/remotevg/remotelv ");
+
+            System.exit(1);
+        }
+        else
+        {
+            System.err.println("LVMSnapSend Multiple matching snapshots:" + sendrcvSnapshotNames);
+            System.exit(1);
+        }
+    }
+    
+    
+    public void snapSend(String snapshotFrom, String snapshotTo) throws InterruptedException, IOException, LVM.LVMException
+    {
+        LVMBlockDiff.LVMSnapshotDiff    diff    = LVMBlockDiff.diffLVMSnapshots(vg, snapshotFrom, snapshotTo);
         int[]                           blocks  = new int[diff.getDifferentBlocks().size()];
         
         for (int x = 0 ; x < blocks.length ; ++x)
@@ -122,20 +145,20 @@ public class LVMSnapSend
         
         System.err.println(diff.getDifferentBlocks()); // @todo
         System.err.println("Blocks changed:" + diff.getDifferentBlocks().size()); // @todo
-        setLVMActivationStatus(vg, snap2, "y");
+        setLVMActivationStatus(vg, snapshotTo, "y");
         
         try
         {
-            DDRandomSend    ddRandomSend = new DDRandomSend(diff.getChunkSizeKB() * 1024, "/dev/" + vg + "/" + snap2, blocks);
+            DDRandomSend    ddRandomSend = new DDRandomSend(diff.getChunkSizeKB() * 1024, "/dev/" + vg + "/" + snapshotTo, blocks);
             
-            System.out.print(targetPath + '\0');
-            System.out.print(String.valueOf(diff.getChunkSizeKB() * 1024) + '\0');
+            out.print(targetPath + '\0');
+            out.print(String.valueOf(diff.getChunkSizeKB() * 1024) + '\0');
             
-            ddRandomSend.sendChangedBlocks(System.out);
+            ddRandomSend.sendChangedBlocks(new PrintStream(out));
         }
         finally
         {
-            setLVMActivationStatus(vg, snap2, "n");
+            setLVMActivationStatus(vg, snapshotTo, "n");
         }
     }
     

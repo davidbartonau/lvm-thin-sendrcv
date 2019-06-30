@@ -35,7 +35,13 @@ public class DDRandomReceive
         {
             DDReceiveSAXHandler handler = new DDReceiveSAXHandler(outfileRW);
             
-            saxParser.parse(in, handler);
+            saxParser.parse(new FilterInputStream(in) {
+                @Override
+                public void close() throws IOException {
+                    System.err.println("Trying to close, ignoring");
+                }
+                
+            }, handler);
             
             System.err.println("DDRandomReceive: Written " + handler.blocksWritten + " blocks");
         }

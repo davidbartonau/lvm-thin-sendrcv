@@ -11,6 +11,20 @@ public class IOUtils
     public static final int             BUFFER_SIZE = 4096;
     
     
+    public static String readToByte (InputStream in, byte terminatorByte) throws IOException
+    {
+        StringBuilder   result = new StringBuilder();
+        
+        for (int byteRead = in.read() ; byteRead >= 0 && byteRead != terminatorByte ; byteRead = in.read())
+        {
+            System.err.print ((char)byteRead);
+            result.append((char)byteRead);
+        }
+        
+        return result.toString();
+    }
+    
+    
     public static void pump (InputStream in, OutputStream out) throws IOException
     {
         pump(in, out, Long.MAX_VALUE);

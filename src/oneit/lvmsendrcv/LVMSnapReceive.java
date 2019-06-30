@@ -32,25 +32,12 @@ public class LVMSnapReceive
     }
 
     
-    public static String readToNull (InputStream in) throws IOException
-    {
-        StringBuilder   result = new StringBuilder();
-        
-        for (int charRead = in.read() ; charRead > 0 ; charRead = in.read())
-        {
-            result.append((char)charRead);
-        }
-        
-        return result.toString();
-    }
-    
-    
     public static void receiveSnapshot(InputStream in, OutputStream out) 
     {
         try
         {
-            String                  targetPath = readToNull(in); // "/dev/vgreplica/thinv_replica"
-            int                     blockSizeBytes = Integer.parseInt(readToNull(in));
+            String                  targetPath = IOUtils.readToByte(in, (byte)0); // "/dev/vgreplica/thinv_replica"
+            int                     blockSizeBytes = Integer.parseInt(IOUtils.readToByte(in, (byte)0));
             // @todo authentication
             
             System.err.println("Connection received for:" + targetPath + ":" + blockSizeBytes);
@@ -60,7 +47,8 @@ public class LVMSnapReceive
             DDRandomReceive receiver = new DDRandomReceive(blockSizeBytes, targetPath);
             
             receiver.writeData(in);
-            out.write("OK".getBytes());
+            out.write("OK\0".getBytes());
+            out.flush();
             
             // @todo Create final snapshot
         }
