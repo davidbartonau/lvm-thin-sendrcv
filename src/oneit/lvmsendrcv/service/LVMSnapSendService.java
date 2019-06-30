@@ -101,32 +101,42 @@ public class LVMSnapSendService extends Thread
     
     public void connectAndSend () 
     {
-        try (Socket  connectToServer = new Socket(target, port))
+        try (final Socket  connectToServer = new Socket(target, port))
         {
             System.err.println("Connecting to server:" + target + ":" + port);
             
-            PrintStream     out = new PrintStream(new BufferedOutputStream(connectToServer.getOutputStream()));
-            InputStream     in = connectToServer.getInputStream();
-            LVMSnapSend     sender = new LVMSnapSend(vg, lv, targetPath, out);
+            final PrintStream     out = new PrintStream(new BufferedOutputStream(connectToServer.getOutputStream()));
+            final InputStream     in = connectToServer.getInputStream();
+            LVMSnapSend           sender = new LVMSnapSend(vg, lv, targetPath, out);
             
-            sender.createSnapshotsAndSend();
-            out.flush();
-            connectToServer.shutdownOutput();
-            
-            System.err.println("Ready for response:");
+            sender.createSnapshotsAndSend(() -> {
+                    try
+                    {
+                        out.flush();
+                        connectToServer.shutdownOutput();
+                        
+                        System.err.println("Ready for response:");
 
-            String  response = IOUtils.readToByte(in, (byte)0);
-            
-            if (response.trim().equals("OK"))
-            {
-                System.err.println("Read response Good:" + response);
-            }
-            else
-            {
-                System.err.println("Read response BAD:" + response);
-            }
-            
-            connectToServer.close();
+                        String  response = IOUtils.readToByte(in, (byte)0);
+
+                        if (response.trim().equals("OK"))
+                        {
+                            System.err.println("Read response Good:" + response);
+                            return true;
+                        }
+                        else
+                        {
+                            System.err.println("Read response BAD:" + response);
+                            return false;
+                        }
+                    }
+                    catch (IOException e)
+                    {
+                        e.printStackTrace();
+                        System.err.println("Error reading response");
+                        return false;
+                    }
+                });
         }
         catch (Exception e)
         {

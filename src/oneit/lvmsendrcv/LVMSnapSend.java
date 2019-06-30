@@ -7,6 +7,8 @@ import java.io.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.function.BooleanSupplier;
+import java.util.function.Predicate;
 import org.apache.commons.cli.*;
 import org.json.JSONObject;
 
@@ -65,7 +67,7 @@ public class LVMSnapSend
                                                             Utils.getMandatoryString("to", cmdLine, options),
                                                             System.out);
 
-                sender.createSnapshotsAndSend();
+                sender.createSnapshotsAndSend(() -> { return true; });
             }
         }
         catch (Exception e)
@@ -76,7 +78,7 @@ public class LVMSnapSend
     }   
 
     
-    public void createSnapshotsAndSend () throws InterruptedException, IOException, LVM.LVMException
+    public void createSnapshotsAndSend (BooleanSupplier checkSendSuccessful) throws InterruptedException, IOException, LVM.LVMException
     {
         Map<String, LVM.LVMSnapshot>    snapshots   = LVM.getSnapshotInfo(new String[] { vg });
         SortedSet<String>               sendrcvSnapshotNames = new TreeSet<>();
@@ -100,8 +102,12 @@ public class LVMSnapSend
             try
             {
                 snapSend(snapshotFrom, snapshotTo);
-                removeLVMSnapshot(vg, snapshotFrom);
-                successful = true;
+                
+                if (checkSendSuccessful.getAsBoolean())
+                {
+                    removeLVMSnapshot(vg, snapshotFrom);
+                    successful = true;
+                }
             }
             finally
             {
